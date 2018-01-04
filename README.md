@@ -1,4 +1,4 @@
-mNotify
+mnotify
 =======
 
 A minimalistic notification daemon.  

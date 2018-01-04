@@ -16,7 +16,7 @@ import Control.Concurrent (threadDelay)
 import Data.Int
 
 getServerInformation :: IO (String, String, String, String)
-getServerInformation = return ("Nmonad", "Nmonad","0.1","0.1")
+getServerInformation = return ("mnotify", "mnotify","0.1","0.1")
 
 getCapabilities :: IO [String]
 getCapabilities = return (traceShowId ["body"])
@@ -31,7 +31,6 @@ notify drawRoutine mCall = (drawRoutine vSummary vBody) >> return reply
 
 unVar :: (IsVariant a) => a -> Variant -> a
 unVar defaultValue variant = fromMaybe defaultValue (fromVariant variant)
-
 
 notifyInSignature = [
     TypeString,

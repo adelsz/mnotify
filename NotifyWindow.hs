@@ -63,18 +63,22 @@ printText text x y color dpy win = do
   setForeground dpy gc fgcolor
   setBackground dpy gc bgcolor
   fontStruc <- loadQueryFont dpy "-misc-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
-  let strLen = zip (map (toInteger . (+2) . textWidth fontStruc) $ words text) $ words text
+  let wordList = words text
+      wordWidths = map (toInteger . (+2) . textWidth fontStruc) wordList
+      wordTokens = zip wordWidths wordList
       (_,asc,desc,_) = textExtents fontStruc text
-      drawShiftedText (shift,text) = drawImageString dpy win gc offset (fromIntegral ((fromIntegral $ desc+asc+3)*shift) + valign) text
-  mapM (drawShiftedText) $ wordwrap strLen $ fromIntegral (wwidth- 50)
+      drawWrappedText (lineNumber,text) = drawImageString dpy win gc offset verticalOffset text
+        where verticalOffset = (desc+asc+3)*(fromIntegral lineNumber) + valign
+  let lines =  wordwrap wordTokens $ fromIntegral (wwidth - 50)
+  mapM drawWrappedText $ zip [1..(length lines)] lines
   freeGC dpy gc
   freeFont dpy fontStruc 
 
-wordwrap :: [(Integer, String)] -> Integer -> [(Int, String)]
-wordwrap tokens limit = zip [1..(length sentences)] sentences
-  where inctkn = scanl1 (\(ax,ay) (bx,by) -> (ax+bx, by) ) tokens
-        grouptkn = groupBy (\(a,_) (b,_) -> (==) (quot a limit ) (quot b limit)) inctkn 
-        sentences = map (unwords . (map snd)) grouptkn
+wordwrap :: [(Integer, String)] -> Integer -> [String]
+wordwrap tokens limit = lines
+  where subsentences = scanl1 (\(ax,ay) (bx,by) -> (ax+bx, by) ) tokens
+        groupedTokens = groupBy (\(a,_) (b,_) -> (==) (quot a limit ) (quot b limit)) subsentences 
+        lines = map (unwords . (map snd)) groupedTokens
 
 printTitle :: String -> Display -> Window -> IO ()
 printTitle text = printText text 10 20 "lightblue"
